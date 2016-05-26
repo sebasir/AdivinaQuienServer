@@ -1,9 +1,9 @@
 package controller;
 
 public enum Urls {
-	publicKey("_4d1v1n4Qu13n"),
+	publicKey("_4di1v1n4Qu13n"),
 	algorithm("PBEWithMD5AndDES"),
-	charset("UTF-8");
+	charset("ISO-8859-1");
 
 	private String url;
 

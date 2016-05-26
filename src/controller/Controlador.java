@@ -73,12 +73,12 @@ public class Controlador implements ActionListener, KeyListener, DocumentListene
 			
 		case "sendRegister":
 			vistaSignup.lockInterface();
-			conn.sendMessage("reg:" + datos.getRegUsername() + "|" + datos.getRegName() + "|" + utils.encriptarClave(datos.getRegPassword()));
+			conn.sendMessage("reg@" + datos.getRegName() + "@" + datos.getRegUsername() + "@" + utils.encriptarClave(datos.getRegPassword()));
 			vistaSignup.releaseInterface();
 			break;
 
 		case "login":
-			conn.sendMessage("log:" + datos.getUserName() + "|" + utils.encriptarClave(datos.getPassWord()));
+			conn.sendMessage("log@" + datos.getUserName() + "@" + utils.encriptarClave(datos.getPassWord()));
 			break;
 		}
 	}

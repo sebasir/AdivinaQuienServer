@@ -50,8 +50,8 @@ public class SignUp extends JFrame {
 		botonSalir.setText("Salir");
 		botonSalir.setActionCommand("cancelRegister");
 		textName.getDocument().putProperty("field", "regName");
-		textPassword.getDocument().putProperty("field", "regUsername");
-		textUsername.getDocument().putProperty("field", "regPassword");
+		textPassword.getDocument().putProperty("field", "regPassword");
+		textUsername.getDocument().putProperty("field", "regUsername");
 		contenedor.add(labelName);
 		contenedor.add(labelTitulo);
 		contenedor.add(labelUsername);

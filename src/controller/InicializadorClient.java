@@ -5,7 +5,7 @@ import view.AdivinaQuien;
 import view.LogIn;
 import view.SignUp;
 
-public class Inicializador {
+public class InicializadorClient {
 	private static AdivinaQuien vistaJuego;
 	private static LogIn vistaLogin;
 	private static SignUp vistaSignup;

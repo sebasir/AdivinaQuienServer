@@ -93,15 +93,28 @@ public class Connection extends Thread {
 
 		public void run() {
 			String line = "";
+			String[] serverMessage;
 			try {
 				while (datos.isConnected() && (line = in.readUTF()) != null) {
 					line = utils.decryptURL(line);
+					serverMessage = line.split("@");
 					if (line.equals("")) {
 						vistaJuego.dispose();
-					} else if (line.equals("log:")) {
-						vistaLogin.showMessage(line.substring(4));
-					} else if (line.startsWith("reg:")) {
-						vistaSignup.showMessage(line.substring(4));
+					} else if (serverMessage[0].equals("log")) {
+						if(serverMessage[1].equals("error"))
+							vistaLogin.showMessage(serverMessage[2]);
+						else if(serverMessage[1].equals("ok")){
+							vistaLogin.showMessage(serverMessage[2]);
+							vistaLogin.dispose();
+							
+						}
+					} else if (serverMessage[0].equals("reg")) {
+						if(serverMessage[1].equals("error"))
+							vistaSignup.showMessage(serverMessage[2]);
+						else if(serverMessage[1].equals("ok")){
+							vistaSignup.showMessage(serverMessage[2]);
+							vistaSignup.dispose();
+						}
 					}
 				}
 			} catch (IOException e) {

@@ -109,7 +109,7 @@ public class LogIn extends JFrame {
 	}
 	
 	public int showConfirmDisconnect() {
-		return JOptionPane.showConfirmDialog(null, "Seguro desconectar el chat?");
+		return JOptionPane.showConfirmDialog(null, "Seguro desconectar el Juego?");
 	}
 
 	public String showInputAddress() {

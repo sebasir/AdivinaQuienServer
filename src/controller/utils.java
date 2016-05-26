@@ -17,7 +17,7 @@ public class utils {
 		MessageDigest md = null;
 		try {
 			md = MessageDigest.getInstance("MD5");
-			md.update(clave.getBytes("ISO-8859-1"));
+			md.update(clave.getBytes(Urls.charset.getUrl()));
 			byte raw[] = md.digest();
 			clave = Base64.encodeBase64String(raw);
 		} catch (Exception e) {
