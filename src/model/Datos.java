@@ -10,8 +10,11 @@ public class Datos {
 	private String regUsername;
 	private String regPassword;
 	private String regName;
+	private String selectedPersonage;
 	private boolean connected;
 	private byte[] waitImage;
+	private byte[] winImage;
+	private byte[] loseImage;
 	private Socket socket;
 	private ArrayList<Personage> tablero;
 	public static final int serverPort = 12345;
@@ -100,5 +103,29 @@ public class Datos {
 		setConnected(false);
 		setServerAddress(null);
 		setSocket(null);
+	}
+
+	public String getSelectedPersonage() {
+		return selectedPersonage;
+	}
+
+	public void setSelectedPersonage(String selectedPersonage) {
+		this.selectedPersonage = selectedPersonage;
+	}
+
+	public byte[] getWinImage() {
+		return winImage;
+	}
+
+	public void setWinImage(byte[] winImage) {
+		this.winImage = winImage;
+	}
+
+	public byte[] getLoseImage() {
+		return loseImage;
+	}
+
+	public void setLoseImage(byte[] loseImage) {
+		this.loseImage = loseImage;
 	}
 }

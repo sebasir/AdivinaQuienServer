@@ -10,6 +10,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
 import model.Datos;
+import model.Personage;
 import view.AdivinaQuien;
 import view.LogIn;
 import view.SignUp;
@@ -40,7 +41,7 @@ public class Controlador implements ActionListener, KeyListener, DocumentListene
 			break;
 
 		case "exitGame":
-			if(vistaJuego.showConfirmDisconnect() == 0) {
+			if (vistaJuego.showConfirmDisconnect() == 0) {
 				conn.sendMessage("dis");
 				if (datos.isConnected())
 					disconnect();
@@ -67,7 +68,8 @@ public class Controlador implements ActionListener, KeyListener, DocumentListene
 			}
 			break;
 		case "send":
-			
+			if (datos.isConnected())
+				sendQuestion();
 			break;
 
 		case "register":
@@ -88,13 +90,33 @@ public class Controlador implements ActionListener, KeyListener, DocumentListene
 		case "login":
 			conn.sendMessage("log@" + datos.getUserName() + "@" + utils.encriptarClave(datos.getPassWord()));
 			break;
+
+		default:
+			String selectedPersonage = boton.getActionCommand();
+			if (selectedPersonage != null && selectedPersonage.startsWith("pers_")) {
+				selectedPersonage = selectedPersonage.substring(5);
+				if (datos.getSelectedPersonage() == null) {
+					if (vistaJuego.showConfirmPersonage("Estas seguro que deseas seleccionar a ", getPersonage(Integer.parseInt(selectedPersonage))) == 0) {
+						datos.setSelectedPersonage(selectedPersonage);
+						conn.sendMessage("pers@" + datos.getSelectedPersonage());
+						vistaJuego.setChatText("Esperando al servidor...");
+					}
+				} else {
+					selectedPersonage = datos.getSelectedPersonage();
+					if (vistaJuego.showConfirmPersonage("Estas seguro que deseas seleccionar a ", getPersonage(Integer.parseInt(selectedPersonage))) == 0) {
+						conn.sendMessage("guess@" + datos.getSelectedPersonage());
+						vistaJuego.setChatText("Esperando al servidor...");
+					}
+				}
+			}
+			break;
 		}
 	}
 
 	private void connect() {
 		vistaLogin.setEstadoLabel("Conectando");
 		vistaLogin.lockInterface();
-		conn = new Connection(vistaJuego, vistaLogin, vistaSignup, datos);
+		conn = new Connection(datos, vistaJuego, vistaLogin, vistaSignup, this);
 		conn.start();
 	}
 
@@ -114,7 +136,17 @@ public class Controlador implements ActionListener, KeyListener, DocumentListene
 	public void keyTyped(KeyEvent e) {
 		if (datos.isConnected())
 			if ((int) e.getKeyChar() == 10)
-				conn.sendMessage("");
+				sendQuestion();
+	}
+
+	private void sendQuestion() {
+		String question = vistaJuego.getMessage().trim();
+		if (!validateMessage(question))
+			vistaJuego.showMessage("Debes hacer una pregunta válida");
+		else {
+			conn.sendMessage("q@" + question);
+			vistaJuego.lockInterface();
+		}
 	}
 
 	@Override
@@ -163,5 +195,19 @@ public class Controlador implements ActionListener, KeyListener, DocumentListene
 		}
 		vistaLogin.setLoginStatus(datos.getPassWord() != null && datos.getUserName() != null && !datos.getPassWord().isEmpty() && !datos.getUserName().isEmpty());
 		vistaSignup.setRegisterStatus(datos.getRegName() != null && datos.getRegPassword() != null && datos.getRegUsername() != null && !datos.getRegPassword().isEmpty() && !datos.getRegUsername().isEmpty() && !datos.getRegName().isEmpty() && !datos.getRegName().isEmpty());
+	}
+
+	private boolean validateMessage(String message) {
+		if (message != null)
+			if (!message.trim().equals(""))
+				return true;
+		return false;
+	}
+
+	private Personage getPersonage(int idPersonage) {
+		for (Personage p : datos.getTablero())
+			if (p.getIndex() == idPersonage)
+				return p;
+		return null;
 	}
 }

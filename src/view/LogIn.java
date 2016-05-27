@@ -100,8 +100,8 @@ public class LogIn extends JFrame {
 		textPassword.setBounds(100, 79, 100, 20);
 		botonLogin.setBounds(15, 110, 95, 25);
 		botonRegistrar.setBounds(120, 110, 95, 25);
-		botonSalir.setBounds(287, 10, 95, 25);
-		botonConectar.setBounds(287, 150, 95, 25);
+		botonConectar.setBounds(287, 10, 95, 25);
+		botonSalir.setBounds(287, 150, 95, 25);
 	}
 	
 	public void showMessage(String message) {

@@ -20,6 +20,8 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.UIManager;
+
+import model.Feature;
 import model.Personage;
 
 public class AdivinaQuien extends JFrame {
@@ -27,10 +29,9 @@ public class AdivinaQuien extends JFrame {
 	private Container contenedor;
 	private JButton botonEnviar;
 	private JButton botonSalir;
-	private JButton botonConnect;
+	private JButton botonAdivinar;
 	private JLabel labelTitulo;
-	private JLabel labelEstado;
-	private JLabel labelChat;
+	private JLabel labelJuego;
 	private JLabel labelHistory;
 	private JTextArea areaEscritura;
 	private JPanel areaPersonage;
@@ -63,24 +64,21 @@ public class AdivinaQuien extends JFrame {
 		scrollPersonage.setViewportView(areaPersonage);
 		scrollEscritura.setViewportView(areaEscritura);
 		scrollHistory.setViewportView(areaHistory);
-		labelTitulo.setText("Sistemas Distribuidos: Chat sobre TCP");
+		labelTitulo.setText("Sistemas Distribuidos: Adivina Quien");
 		labelHistory.setText("Historial de Preguntas:");
-		labelChat.setText("Chat de Grupo");
+		labelJuego.setText("Tablero");
 		botonEnviar.setText("Enviar");
 		botonEnviar.setActionCommand("send");
-		botonConnect.setText("Conectar");
-		botonConnect.setActionCommand("connect");
+		botonAdivinar.setText("Adivinar");
+		botonAdivinar.setActionCommand("guess");
 		botonSalir.setText("Salir");
 		botonSalir.setActionCommand("exitGame");
-		labelEstado.setText("Desconectado");
-		labelEstado.setFont(new Font("Consolas", Font.BOLD, 12));
 		contenedor.add(labelTitulo);
-		contenedor.add(botonConnect);
+		contenedor.add(botonAdivinar);
 		contenedor.add(botonSalir);
 		contenedor.add(botonEnviar);
-		contenedor.add(labelEstado);
 		contenedor.add(labelHistory);
-		contenedor.add(labelChat);
+		contenedor.add(labelJuego);
 		contenedor.add(scrollPersonage);
 		contenedor.add(scrollEscritura);
 		contenedor.add(scrollHistory);
@@ -88,13 +86,12 @@ public class AdivinaQuien extends JFrame {
 	}
 
 	private void initComponents() {
-		labelEstado = new JLabel();
 		labelTitulo = new JLabel();
 		labelHistory = new JLabel();
-		labelChat = new JLabel();
+		labelJuego = new JLabel();
 		botonEnviar = new JButton();
 		botonSalir = new JButton();
-		botonConnect = new JButton();
+		botonAdivinar = new JButton();
 		areaEscritura = new JTextArea();
 		areaPersonage = new JPanel();
 		areaHistory = new JTextArea();
@@ -105,11 +102,10 @@ public class AdivinaQuien extends JFrame {
 
 	private void setPositions() {
 		labelTitulo.setBounds(15, 10, 500, 23);
-		labelEstado.setBounds(470, 10, 240, 23);
-		labelChat.setBounds(15, 56, 240, 23);
+		labelJuego.setBounds(15, 56, 240, 23);
 		labelHistory.setBounds(525, 56, 240, 23);
 		botonSalir.setBounds(675, 10, 60, 23);
-		botonConnect.setBounds(575, 10, 93, 23);
+		botonAdivinar.setBounds(575, 10, 93, 23);
 		botonEnviar.setBounds(525, 436, 210, 37);
 		scrollPersonage.setBounds(15, 76, 500, 295);
 		scrollEscritura.setBounds(15, 382, 500, 90);
@@ -119,7 +115,7 @@ public class AdivinaQuien extends JFrame {
 	public void addControlListener(ActionListener controlListener) {
 		botonEnviar.addActionListener(controlListener);
 		botonSalir.addActionListener(controlListener);
-		botonConnect.addActionListener(controlListener);
+		botonAdivinar.addActionListener(controlListener);
 	}
 
 	public void addKeyListener(KeyListener controlListener) {
@@ -131,13 +127,18 @@ public class AdivinaQuien extends JFrame {
 	}
 
 	public void lockInterface() {
-		botonConnect.setEnabled(false);
-		botonSalir.setEnabled(false);
+		areaEscritura.setEditable(false);
+		areaEscritura.setEnabled(false);
+		botonAdivinar.setEnabled(false);
+		botonEnviar.setEnabled(false);
 	}
 
 	public void releaseInterface() {
-		botonConnect.setEnabled(true);
-		botonSalir.setEnabled(true);
+		areaEscritura.setText("");
+		botonEnviar.setEnabled(true);
+		areaEscritura.setEditable(true);
+		areaEscritura.setEnabled(true);
+		botonAdivinar.setEnabled(true);
 	}
 
 	public int showConfirmDisconnect() {
@@ -145,7 +146,19 @@ public class AdivinaQuien extends JFrame {
 	}
 
 	public int showConfirmAnswer(String question) {
-		return JOptionPane.showConfirmDialog(null, question);
+		return JOptionPane.showConfirmDialog(null, question, "Te han preguntado...", JOptionPane.YES_NO_OPTION);
+	}
+
+	public int showConfirmPersonage(String text, Personage p) {
+		try {
+			String features = "Características: \n";
+			for (Feature f : p.getFeature())
+				features += f.getGrupo() + ": " + f.getItem() + "\n";
+			ImageIcon icon = new ImageIcon(ImageIO.read(new ByteArrayInputStream(p.getImagen())));
+			return JOptionPane.showConfirmDialog(null, text + p.getNombre() + "?\n" + features, "Confirma selección", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, icon);
+		} catch (Exception e) {
+			return JOptionPane.showConfirmDialog(null, text + p.getNombre(), "Confirma selección", JOptionPane.YES_NO_OPTION, JOptionPane.INFORMATION_MESSAGE, null);
+		}
 	}
 
 	public String showInputQuestion() {
@@ -162,24 +175,16 @@ public class AdivinaQuien extends JFrame {
 		return msg;
 	}
 
-	public void loadPersonages() {
-		areaPersonage.removeAll();
-		areaPersonage.setLayout(new GridLayout(3, 5));
-		JButton boton = null;
-		for(int i = 1; i <= 15; i++) {
-			boton = new JButton();
-			boton.setBorder(BorderFactory.createEmptyBorder());
-			areaPersonage.add(boton);
-		}
-		revalidate();
-	}
-	
-	public void loadPersonages(List<Personage> personages) {
+	public void loadPersonages(List<Personage> personages, ActionListener controlListener) {
 		JButton boton = null;
 		try {
+			areaPersonage.removeAll();
 			areaPersonage.setLayout(new GridLayout(3, 5));
-			for (Personage p: personages) {
+			for (Personage p : personages) {
 				boton = new JButton();
+				boton.addActionListener(controlListener);
+				boton.setActionCommand("pers_" + p.getIndex());
+				boton.setToolTipText(p.getNombre());
 				BufferedImage buff = ImageIO.read(new ByteArrayInputStream(p.getImagen()));
 				boton.setIcon(new ImageIcon(buff.getScaledInstance(90, 90, 0)));
 				boton.setBorder(BorderFactory.createEmptyBorder());
@@ -199,14 +204,23 @@ public class AdivinaQuien extends JFrame {
 		botonEnviar.setEnabled(false);
 	}
 
-	public void showWait(byte[] waitImage) {
+	public void setChatText(String string) {
+		areaEscritura.setText(string);
+		areaEscritura.setEditable(false);
+	}
+
+	public void showImage(byte[] byteImage) {
 		BufferedImage buff;
 		try {
-			buff = ImageIO.read(new ByteArrayInputStream(waitImage));
+			buff = ImageIO.read(new ByteArrayInputStream(byteImage));
 			areaPersonage.removeAll();
 			areaPersonage.add(new JLabel(new ImageIcon(buff.getScaledInstance(485, 280, 0))));
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+
+	public void appendHistory(String history) {
+		areaHistory.append(history + "\n");
 	}
 }

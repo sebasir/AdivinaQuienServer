@@ -22,12 +22,14 @@ public class Connection extends Thread {
 	private ObjectInputStream in;
 	private DataOutputStream out;
 	private Recibir recibir;
+	private Controlador controller;
 
-	public Connection(AdivinaQuien vistaJuego, LogIn vistaLogin, SignUp vistaSignup, Datos datos) {
+	public Connection(Datos datos, AdivinaQuien vistaJuego, LogIn vistaLogin, SignUp vistaSignup, Controlador controller) {
 		this.vistaJuego = vistaJuego;
 		this.vistaLogin = vistaLogin;
 		this.vistaSignup = vistaSignup;
 		this.datos = datos;
+		this.controller = controller;
 	}
 
 	public void run() {
@@ -102,8 +104,14 @@ public class Connection extends Thread {
 				while (datos.isConnected() && (object = in.readObject()) != null) {
 					if (object instanceof Personage)
 						datos.getTablero().add((Personage) object);
-					if (object instanceof byte[])
-						datos.setWaitImage((byte[]) object);
+					if (object instanceof byte[]) {
+						if (datos.getWaitImage() == null)
+							datos.setWaitImage((byte[]) object);
+						if (datos.getWinImage() == null)
+							datos.setWinImage((byte[]) object);
+						if (datos.getLoseImage() == null)
+							datos.setLoseImage((byte[]) object);
+					}
 					if (object instanceof String) {
 						String line = (String) object;
 						line = utils.decryptURL(line);
@@ -117,9 +125,10 @@ public class Connection extends Thread {
 							else if (serverMessage[1].equals("ok")) {
 								vistaLogin.showMessage(serverMessage[2]);
 								vistaLogin.dispose();
-								vistaJuego.showWait(datos.getWaitImage());
+								vistaJuego.showImage(datos.getWaitImage());
 								sendMessage("ready");
 								vistaJuego.setVisible(true);
+								vistaJuego.lockInterface();
 							}
 						} else if (serverMessage[0].equals("reg")) {
 							if (serverMessage[1].equals("error"))
@@ -132,15 +141,59 @@ public class Connection extends Thread {
 							if (serverMessage[1].equals("error"))
 								vistaJuego.showMessage("Error en el emparejamiento.");
 							else if (serverMessage[1].equals("ok")) {
-								vistaJuego.loadPersonages();
+								if (serverMessage[2].equals("0")) {
+									vistaJuego.showMessage("Es tu turno de preguntar!");
+									vistaJuego.releaseInterface();
+								} else if (serverMessage[2].equals("1")) {
+									vistaJuego.setChatText("El otro jugador está preguntando");
+									vistaJuego.lockInterface();
+								}
 							}
 						} else if (serverMessage[0].equals("user")) {
 							if (serverMessage[1].equals("error"))
 								vistaJuego.showMessage(serverMessage[2]);
 							else if (serverMessage[1].equals("ok")) {
 								vistaJuego.showMessage(serverMessage[2]);
-								vistaJuego.showMessage("HOLiiii");
 							}
+						} else if (serverMessage[0].equals("turn")) {
+							if (serverMessage[1].equals("error"))
+								vistaJuego.showMessage(serverMessage[2]);
+							else if (serverMessage[1].equals("ok")) {
+								vistaJuego.loadPersonages(datos.getTablero(), controller);
+								vistaJuego.showMessage(serverMessage[2]);
+								vistaJuego.setChatText("Selecciona tu personaje...");
+								vistaJuego.lockInterface();
+							}
+						} else if (serverMessage[0].equals("q")) {
+							if (serverMessage[1].equals("error"))
+								vistaJuego.showMessage(serverMessage[2]);
+							else if (serverMessage[1].equals("ok")) {
+								sendMessage("a@" + vistaJuego.showConfirmAnswer(serverMessage[2]));
+								vistaJuego.releaseInterface();
+							}
+						} else if (serverMessage[0].equals("a")) {
+							if (serverMessage[1].equals("error"))
+								vistaJuego.showMessage(serverMessage[2]);
+							else if (serverMessage[1].equals("ok")) {
+								vistaJuego.showMessage(serverMessage[2]);
+								vistaJuego.lockInterface();
+							}
+						} else if (serverMessage[0].equals("game")) {
+							if (serverMessage[1].equals("error")) {
+								vistaJuego.showMessage(serverMessage[2]);
+								vistaJuego.dispose();
+								vistaLogin.setVisible(true);
+								datos.setConnected(false);
+							}
+						} else if (serverMessage[0].equals("guess")) {
+							if (serverMessage[1].equals("win"))
+								vistaJuego.showImage(datos.getWinImage());
+							else if (serverMessage[1].equals("lose"))
+								vistaJuego.showImage(datos.getLoseImage());
+							vistaJuego.showMessage(serverMessage[2]);
+						} else if (serverMessage[0].equals("hist")) {
+							if (serverMessage[1].equals("ok"))
+								vistaJuego.appendHistory(serverMessage[2]);
 						}
 					}
 				}
