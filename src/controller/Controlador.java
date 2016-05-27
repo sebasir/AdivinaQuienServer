@@ -5,12 +5,10 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
-
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.Document;
-
 import model.Datos;
 import view.AdivinaQuien;
 import view.LogIn;
@@ -40,6 +38,16 @@ public class Controlador implements ActionListener, KeyListener, DocumentListene
 			vistaSignup.dispose();
 			vistaJuego.dispose();
 			break;
+
+		case "exitGame":
+			if(vistaJuego.showConfirmDisconnect() == 0) {
+				conn.sendMessage("dis");
+				if (datos.isConnected())
+					disconnect();
+				vistaJuego.dispose();
+				vistaLogin.setVisible(true);
+			}
+			break;
 		case "connect":
 			if (!datos.isConnected()) {
 				datos.setServerAddress(vistaLogin.showInputAddress());
@@ -59,18 +67,18 @@ public class Controlador implements ActionListener, KeyListener, DocumentListene
 			}
 			break;
 		case "send":
-			conn.sendMessage("HOLI");
-			break;
 			
+			break;
+
 		case "register":
 			vistaSignup.setVisible(true);
 			break;
-			
+
 		case "cancelRegister":
 			vistaSignup.reiniciar();
 			vistaSignup.setVisible(false);
 			break;
-			
+
 		case "sendRegister":
 			vistaSignup.lockInterface();
 			conn.sendMessage("reg@" + datos.getRegName() + "@" + datos.getRegUsername() + "@" + utils.encriptarClave(datos.getRegPassword()));

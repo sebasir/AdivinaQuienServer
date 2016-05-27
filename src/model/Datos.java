@@ -1,6 +1,7 @@
 package model;
 
 import java.net.Socket;
+import java.util.ArrayList;
 
 public class Datos {
 	private String serverAddress;
@@ -10,7 +11,9 @@ public class Datos {
 	private String regPassword;
 	private String regName;
 	private boolean connected;
+	private byte[] waitImage;
 	private Socket socket;
+	private ArrayList<Personage> tablero;
 	public static final int serverPort = 12345;
 
 	public String getServerAddress() {
@@ -28,7 +31,7 @@ public class Datos {
 	public void setPassWord(String passWord) {
 		this.passWord = passWord;
 	}
-	
+
 	public String getUserName() {
 		return userName;
 	}
@@ -75,6 +78,22 @@ public class Datos {
 
 	public void setRegName(String regName) {
 		this.regName = regName;
+	}
+
+	public ArrayList<Personage> getTablero() {
+		return tablero;
+	}
+
+	public void setTablero(ArrayList<Personage> tablero) {
+		this.tablero = tablero;
+	}
+
+	public void setWaitImage(byte[] waitImage) {
+		this.waitImage = waitImage;
+	}
+
+	public byte[] getWaitImage() {
+		return waitImage;
 	}
 
 	public void reiniciar() {

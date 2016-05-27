@@ -1,12 +1,15 @@
 package controller;
 
-import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import model.Datos;
+import model.Personage;
 import view.AdivinaQuien;
 import view.LogIn;
 import view.SignUp;
@@ -16,7 +19,7 @@ public class Connection extends Thread {
 	private LogIn vistaLogin;
 	private SignUp vistaSignup;
 	private Datos datos;
-	private DataInputStream in;
+	private ObjectInputStream in;
 	private DataOutputStream out;
 	private Recibir recibir;
 
@@ -32,8 +35,8 @@ public class Connection extends Thread {
 		boolean success = false;
 		try {
 			datos.setSocket(new Socket(datos.getServerAddress(), Datos.serverPort));
-			in = new DataInputStream(datos.getSocket().getInputStream());
 			out = new DataOutputStream(datos.getSocket().getOutputStream());
+			in = new ObjectInputStream(datos.getSocket().getInputStream());
 			success = true;
 			message = "Conexion exitosa!";
 		} catch (UnknownHostException e) {
@@ -92,33 +95,56 @@ public class Connection extends Thread {
 		}
 
 		public void run() {
-			String line = "";
+			Object object = "";
 			String[] serverMessage;
 			try {
-				while (datos.isConnected() && (line = in.readUTF()) != null) {
-					line = utils.decryptURL(line);
-					serverMessage = line.split("@");
-					if (line.equals("")) {
-						vistaJuego.dispose();
-					} else if (serverMessage[0].equals("log")) {
-						if(serverMessage[1].equals("error"))
-							vistaLogin.showMessage(serverMessage[2]);
-						else if(serverMessage[1].equals("ok")){
-							vistaLogin.showMessage(serverMessage[2]);
-							vistaLogin.dispose();
-							
-						}
-					} else if (serverMessage[0].equals("reg")) {
-						if(serverMessage[1].equals("error"))
-							vistaSignup.showMessage(serverMessage[2]);
-						else if(serverMessage[1].equals("ok")){
-							vistaSignup.showMessage(serverMessage[2]);
-							vistaSignup.dispose();
+				datos.setTablero(new ArrayList<Personage>());
+				while (datos.isConnected() && (object = in.readObject()) != null) {
+					if (object instanceof Personage)
+						datos.getTablero().add((Personage) object);
+					if (object instanceof byte[])
+						datos.setWaitImage((byte[]) object);
+					if (object instanceof String) {
+						String line = (String) object;
+						line = utils.decryptURL(line);
+						serverMessage = line.split("@");
+						System.out.println(Arrays.toString(serverMessage));
+						if (line.equals("")) {
+							vistaJuego.dispose();
+						} else if (serverMessage[0].equals("log")) {
+							if (serverMessage[1].equals("error"))
+								vistaLogin.showMessage(serverMessage[2]);
+							else if (serverMessage[1].equals("ok")) {
+								vistaLogin.showMessage(serverMessage[2]);
+								vistaLogin.dispose();
+								vistaJuego.showWait(datos.getWaitImage());
+								sendMessage("ready");
+								vistaJuego.setVisible(true);
+							}
+						} else if (serverMessage[0].equals("reg")) {
+							if (serverMessage[1].equals("error"))
+								vistaSignup.showMessage(serverMessage[2]);
+							else if (serverMessage[1].equals("ok")) {
+								vistaSignup.showMessage(serverMessage[2]);
+								vistaSignup.dispose();
+							}
+						} else if (serverMessage[0].equals("ready")) {
+							if (serverMessage[1].equals("error"))
+								vistaJuego.showMessage("Error en el emparejamiento.");
+							else if (serverMessage[1].equals("ok")) {
+								vistaJuego.loadPersonages();
+							}
+						} else if (serverMessage[0].equals("user")) {
+							if (serverMessage[1].equals("error"))
+								vistaJuego.showMessage(serverMessage[2]);
+							else if (serverMessage[1].equals("ok")) {
+								vistaJuego.showMessage(serverMessage[2]);
+								vistaJuego.showMessage("HOLiiii");
+							}
 						}
 					}
 				}
-			} catch (IOException e) {
-
+			} catch (Exception e) {
 			}
 		}
 	}

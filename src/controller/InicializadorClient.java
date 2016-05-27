@@ -18,11 +18,22 @@ public class InicializadorClient {
 		vistaSignup = new SignUp();
 		datos = new Datos();
 		control = new Controlador(vistaJuego, vistaLogin, vistaSignup, datos);
-		//vistaJuego.addControlListener(control);
+		vistaJuego.addControlListener(control);
 		vistaLogin.addControlListener(control);
 		vistaLogin.addDocumentListener(control);
 		vistaSignup.addControlListener(control);
 		vistaSignup.addDocumentListener(control);
 		vistaLogin.setVisible(true);
+
+		/*
+		 * vistaJuego.setVisible(true); ArrayList<Personage> personages = new
+		 * ArrayList<>(); Personage p = null; try { for(int i = 1; i <= 15; i++)
+		 * { p = new Personage(i, "Diego_" + i);
+		 * p.setImagen(Files.readAllBytes(new File("images/" + i +
+		 * ".jpg").toPath())); personages.add(p); } } catch (Exception e) {
+		 * e.printStackTrace(); }
+		 * 
+		 * vistaJuego.loadPersonages(personages);
+		 */
 	}
 }
